@@ -1,0 +1,25 @@
+div.flash {
+    color: white;
+    padding: 1em;
+    margin: 0.3em 0;
+}
+
+div.success {
+    background-color: #28a745;
+}
+
+div.warning {
+    background-color: #ffc107;
+}
+
+div.danger {
+    background-color: #dc3545;
+}
+
+pre {
+    height: min-content;
+    max-height: 36em;
+    overflow-y: auto;
+    padding: 0 1em;
+    border: solid black 1px;
+}

@@ -1,0 +1,17 @@
+{block content}
+
+{control sqlForm}
+
+{snippet entity}
+<pre n:if="$entityName">
+<code>
+/**
+{foreach $properties as $property}
+ * {$property}
+{/foreach}
+ */
+class {$entityName} extends \Core\Entity
+{}
+</code>
+</pre>
+{/snippet}
