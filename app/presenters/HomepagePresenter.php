@@ -117,7 +117,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
 
             if(empty($columns[$i][3]))
             {
-                $properties[$i] .= '|null';
+                $properties[$i] .= '|NULL';
             }
 
             $properties[$i] .= ' $' . $columns[$i][1];
