@@ -22,7 +22,7 @@ class ErrorPresenter implements Nette\Application\IPresenter
 	}
 
 
-	public function run(Nette\Application\Request $request)
+	public function run(Nette\Application\Request $request): \Nette\Application\Response
 	{
 		$exception = $request->getParameter('exception');
 

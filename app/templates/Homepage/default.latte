@@ -3,15 +3,40 @@
 {control sqlForm}
 
 {snippet entity}
-<pre n:if="$entityName">
-<code>
-/**
-{foreach $properties as $property}
- * {$property}
-{/foreach}
- */
+<pre style="padding: 1em" n:if="$entityName">
+<code id="output">&lt;?php
+
+declare(strict_types=1);
+
+namespace \Entity;
+
 class {$entityName} extends \ModulIS\Entity
-{}
+{
+{foreach $properties as $property}
+{$property}
+{/foreach}
+}
 </code>
 </pre>
 {/snippet}
+
+<script>
+    function copyOutput()
+    {
+        var copyText = document.getElementById("output");
+
+        if (typeof(copyText) != 'undefined' && copyText != null)
+        {
+            var dummy = document.createElement("textarea");
+
+            document.body.appendChild(dummy);
+
+            dummy.value = copyText.innerHTML.replace('&lt;', '<');
+            dummy.select();
+
+            document.execCommand("copy");
+
+            document.body.removeChild(dummy);
+        }
+    }
+</script>

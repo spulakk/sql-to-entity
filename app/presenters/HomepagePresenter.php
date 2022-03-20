@@ -2,21 +2,22 @@
 
 namespace App\Presenters;
 
-use Nette;
-
-
-final class HomepagePresenter extends Nette\Application\UI\Presenter
+final class HomepagePresenter extends \Nette\Application\UI\Presenter
 {
     private $entityName;
 
     private $properties = [];
 
     private static $intTypes = [
-        'tinyint',
         'smallint',
         'mediumint',
         'int',
         'bigint'
+    ];
+
+    private static $floatTypes = [
+        'float',
+        'double'
     ];
 
     private static $stringTypes = [
@@ -28,12 +29,20 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
         'longtext',
         'enum',
         'set',
-        'date',
-        'datetime',
         'timestamp',
         'time',
         'year'
     ];
+
+    private static $boolTypes = [
+        'tinyint'
+    ];
+
+    private static $datetimeTypes = [
+        'date',
+        'datetime'
+    ];
+
 
     public function renderDefault()
     {
@@ -41,21 +50,26 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
         $this->template->properties = $this->properties;
     }
 
+
     public function createComponentSqlForm()
     {
-        $form = new Nette\Application\UI\Form();
+        $form = new \Nette\Application\UI\Form;
 
         $form->addTextArea('sql', 'SQL', 200, 20)
             ->setRequired();
 
         $form->addSubmit('send', 'Odeslat');
 
+        $form->addButton('copy', 'Kopírovat výstup')
+            ->setHtmlAttribute('onclick', 'copyOutput()');
+
         $form->onSuccess[] = [$this, 'sqlFormSuccess'];
 
         return $form;
     }
 
-    public function sqlFormSuccess(Nette\Application\UI\Form $form, Nette\Utils\ArrayHash $values)
+
+    public function sqlFormSuccess(\Nette\Application\UI\Form $form, \Nette\Utils\ArrayHash $values)
     {
         $unknownTypesArray = $this->generateEntity($values->sql);
 
@@ -72,6 +86,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
             $this->flashMessage('Nepodporované typy (' . $unknownTypes . '), zkontrolujte výsledný kód', 'warning');
         }
     }
+
 
     private function generateEntity(string $sql)
     {
@@ -95,33 +110,55 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
 
         for($i = 0; $i < sizeof($columns); $i++)
         {
-            $properties[$i] = empty($columns[$i][4]) ? '@property' : '@property-read';
+            $properties[$i] = "\t";
+
+            if(!empty($columns[$i][4]))
+            {
+                $properties[$i] .= '#[\ModulIS\Attribute\Readonly]' . PHP_EOL . "\t";
+            }
+
+            $properties[$i] .=  'public ';
+
+            if(empty($columns[$i][3]))
+            {
+                $properties[$i] .= '?';
+            }
 
             if(in_array($columns[$i][2], self::$intTypes))
             {
-                $properties[$i] .= ' int';
+                $properties[$i] .= 'int';
+            }
+            elseif(in_array($columns[$i][2], self::$floatTypes))
+            {
+                $properties[$i] .= 'float';
             }
             elseif(in_array($columns[$i][2], self::$stringTypes))
             {
-                $properties[$i] .= ' string';
+                $properties[$i] .= 'string';
+            }
+            elseif(in_array($columns[$i][2], self::$boolTypes))
+            {
+                $properties[$i] .= 'bool';
+            }
+            elseif(in_array($columns[$i][2], self::$datetimeTypes))
+            {
+                $properties[$i] .= '\Nette\Utils\DateTime';
             }
             else
             {
                 $properties[$i] .= ' ' . $columns[$i][2];
 
-                if($columns[$i][2] != 'float' && $columns[$i][2] != 'double' && !in_array($columns[$i][2], $unknownTypes))
+                if(!in_array($columns[$i][2], $unknownTypes))
                 {
                     $unknownTypes[] = $columns[$i][2];
                 }
             }
 
-            if(empty($columns[$i][3]))
-            {
-                $properties[$i] .= '|null';
-            }
-
-            $properties[$i] .= ' $' . $columns[$i][1];
+            $properties[$i] .= ' $' . $columns[$i][1] . ';' . PHP_EOL;
         }
+
+        /* Strip last EOL */
+        $properties[array_key_last($properties)] = rtrim($properties[array_key_last($properties)]);
 
         $this->properties = $properties;
 
